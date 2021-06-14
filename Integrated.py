@@ -58,8 +58,8 @@ def detectCircles(image, edges, radius ,radiusrange=0):
                     print(alternative_maxes[alternative_best["rad"]]["y"])
                     plt.imshow(img2buffer, cmap='gray')
                     plt.show()
-                    cv2.circle(edges, center=(alternative_maxes[alternative_best["rad"]]["x"], alternative_maxes[alternative_best["rad"]]["y"]), radius=int(alternative_best["rad"]), color=(255, 255, 255), thickness=2)
-                    plt.imshow(edges)
+                    cv2.circle(image, center=(alternative_maxes[alternative_best["rad"]]["x"], alternative_maxes[alternative_best["rad"]]["y"]), radius=int(alternative_best["rad"]), color=(255, 255, 255), thickness=2)
+                    plt.imshow(image)
                     plt.show()
                     print(alternative_best)
                     print('most possible circle place')
@@ -71,24 +71,32 @@ def detectCircles(image, edges, radius ,radiusrange=0):
             plt.imshow(img2buffer, cmap='gray')
             plt.show()
             for i in range(0, len(maxes), 2):
-                cv2.circle(edges, center=(maxes[i + 1], maxes[i]), radius=rad, color=(255, 255, 255), thickness=2)
+                cv2.circle(image, center=(maxes[i + 1], maxes[i]), radius=rad, color=(255, 255, 255), thickness=2)
 
             plt.imshow(edges)
             plt.show()
             break
 
 
-def CircleDetection(img, r_min, r_max):
+def CircleDetection(img_url, img, r_min, r_max):
 
     width, height = img.size
     denominator = 5
     new_size = (int(np.ceil(width/denominator)), int(np.ceil(height/denominator)))
     img = img.resize(new_size)
-    resized_img = img
+    plt.imshow(img)
+    plt.show()
+
+
 
     enhancer = ImageEnhance.Contrast(img)
     img = enhancer.enhance(2.1)
+    plt.imshow(img)
+    plt.show()
+
     img = img.filter(ImageFilter.GaussianBlur(5))
+    plt.imshow(img)
+    plt.show()
 
     img_Gray = np.asarray(img, dtype=np.uint8)
     imgGray = img_Gray.astype(np.uint8)
@@ -99,9 +107,12 @@ def CircleDetection(img, r_min, r_max):
                 imgGray[j,i] = 255
             else:
                 imgGray[j,i] = 0
-    edges = cv2.Canny(imgGray,240,250)
 
-    detectCircles(resized_img, edges, r_min, r_max)
+    edges = cv2.Canny(imgGray, 240, 250)
+    base_image = cv2.imread(img_url)
+    base_image = cv2.cvtColor(base_image, cv2.COLOR_BGR2RGB)
+    base_image_resized = cv2.resize(base_image, new_size)
+    detectCircles(base_image_resized, edges, r_min, r_max)
 
 
 file_list_column = [
@@ -181,12 +192,12 @@ while True:
         try:
             print(imagen)
             Image.open(imagen)
-            img = Image.open(imagen).convert("L")
+            img = Image.open(imagen).convert("RGB")
             print(values["-IN1-"])
             print(values["-IN2-"])
             r_min=int(values["-IN1-"])
             r_max=int(values["-IN2-"])
-            CircleDetection(img, r_min, r_max)
+            CircleDetection(imagen, img, r_min, r_max)
             print(r_min+r_max)
         except:
             pass
